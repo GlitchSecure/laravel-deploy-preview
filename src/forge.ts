@@ -172,9 +172,9 @@ export class Forge {
         .then(function (response) {
             const dumpPayload = {
                 request: {
-                    url: response.request?.url,
+                    path: response.request?.path,
                     method: response.request?.method,
-                    body: response.request?.body,
+                    data: response.request?.data,
                     headers: response.request?.headers,
                 },
                 response: {

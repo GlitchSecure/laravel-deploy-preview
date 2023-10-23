@@ -1,4 +1,4 @@
-import { Server } from './forge.js';
+import { Forge, Server } from './forge.js';
 
 type CreateConfig = {
   name: string;
@@ -106,6 +106,19 @@ export async function destroyPreview({
 
   debug(`Checking for site named '${name}'`);
   const site = server.sites.find((site) => site.name === `${name}.${server.domain}`);
+
+  const dbs = await Forge.listDatabases(servers[0].id);
+  const dbName = name.replace(/-/g, '_').replace(/[^\w_]/g, '');
+
+  const matchingDb = dbs.find((db) => db.name === dbName);
+
+  if (matchingDb) {
+    info(`Database "${dbName}" exists. Deleting...`);
+
+    await Forge.deleteDatabase(servers[0].id, matchingDb.id);
+
+    info('Database "${dbName}" exists. Deleting...');
+  }
 
   if (site) {
     info('Site exists');

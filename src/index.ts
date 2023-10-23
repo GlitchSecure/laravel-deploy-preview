@@ -36,6 +36,15 @@ const pr = github.context.payload as PullRequestEvent;
 if (pr.action === 'opened' || pr.action === 'reopened') {
   // TODO seems like there's a bug in these type definitions, narrowing it to PullRequestOpenedEvent causes an error
   const pr = github.context.payload as PullRequestEvent;
+
+  // Destroy any existing preview for this branch
+  await destroyPreview({
+    name: pr.pull_request.head.ref,
+    servers,
+    info: core.info,
+    debug: core.debug,
+  });
+
   const preview = await createPreview({
     name: pr.pull_request.head.ref,
     repository: pr.repository.full_name,
