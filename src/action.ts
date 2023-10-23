@@ -110,6 +110,8 @@ export async function destroyPreview({
   const dbs = await Forge.listDatabases(servers[0].id);
   const dbName = name.replace(/-/g, '_').replace(/[^\w_]/g, '');
 
+  debug(`Checking for DB named '${dbName}'`);
+
   const matchingDb = dbs.find((db) => db.name === dbName);
 
   if (matchingDb) {
