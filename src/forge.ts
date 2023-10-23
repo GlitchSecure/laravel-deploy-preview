@@ -168,19 +168,39 @@ export class Forge {
   }
 
   private static get(path: string) {
-    return this.client().get(path);
+    return this.client().get(path)
+        .then(function (response) {
+            console.log(response);
+
+            return response;
+        });
   }
 
   private static post(path: string, data: object = {}) {
-    return this.client().post(path, data);
+    return this.client().post(path, data)
+        .then(function (response) {
+            console.log(response);
+
+            return response;
+        });
   }
 
   private static put(path: string, data: object) {
-    return this.client().put(path, data);
+    return this.client().put(path, data)
+        .then(function (response) {
+            console.log(response);
+
+            return response;
+        });
   }
 
   private static delete(path: string) {
-    return this.client().delete(path);
+    return this.client().delete(path)
+        .then(function (response) {
+            console.log(response);
+
+            return response;
+        });
   }
 }
 
