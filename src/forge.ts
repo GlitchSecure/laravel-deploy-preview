@@ -170,7 +170,20 @@ export class Forge {
   private static get(path: string) {
     return this.client().get(path)
         .then(function (response) {
-            console.log(response);
+            const dumpPayload = {
+                request: {
+                    url: response.request?.url,
+                    method: response.request?.method,
+                    body: response.request?.body,
+                    headers: response.request?.headers,
+                },
+                response: {
+                    status: response.status,
+                    headers: response.headers,
+                    data: response.data,
+                }
+            }
+            console.log(dumpPayload);
 
             return response;
         });
@@ -179,7 +192,20 @@ export class Forge {
   private static post(path: string, data: object = {}) {
     return this.client().post(path, data)
         .then(function (response) {
-            console.log(response);
+            const dumpPayload = {
+                request: {
+                    path: response.request?.path,
+                    body: response.request?.body,
+                    headers: response.request?.headers,
+                },
+                response: {
+                    status: response.status,
+                    headers: response.headers,
+                    data: response.data,
+                }
+            }
+
+            console.log(dumpPayload);
 
             return response;
         });
@@ -188,7 +214,20 @@ export class Forge {
   private static put(path: string, data: object) {
     return this.client().put(path, data)
         .then(function (response) {
-            console.log(response);
+            const dumpPayload = {
+                request: {
+                    path: response.request?.path,
+                    body: response.request?.body,
+                    headers: response.request?.headers,
+                },
+                response: {
+                    status: response.status,
+                    headers: response.headers,
+                    data: response.data,
+                }
+            }
+
+            console.log(dumpPayload);
 
             return response;
         });
@@ -197,7 +236,20 @@ export class Forge {
   private static delete(path: string) {
     return this.client().delete(path)
         .then(function (response) {
-            console.log(response);
+            const dumpPayload = {
+                request: {
+                    path: response.request?.path,
+                    body: response.request?.body,
+                    headers: response.request?.headers,
+                },
+                response: {
+                    status: response.status,
+                    headers: response.headers,
+                    data: response.data,
+                }
+            }
+
+            console.log(dumpPayload);
 
             return response;
         });
