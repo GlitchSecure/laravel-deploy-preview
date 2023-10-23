@@ -98,6 +98,7 @@ export async function destroyPreview({
   info = console.log,
   debug = console.log,
 }: DestroyConfig): Promise<void> {
+  debug(`RUNNING DESTROY PREVIEW`);
   debug(`Loading server with ID ${servers[0].id}`);
   const server = await Server.fetch(servers[0].id, servers[0].domain);
 
