@@ -6,6 +6,7 @@ export async function createPreview({
   branch,
   repository,
   servers,
+  beforeDeploy = '',
   afterDeploy = '',
   environment = {},
   certificate,
@@ -21,6 +22,7 @@ export async function createPreview({
   branch: string;
   repository: string;
   servers: { id: number; domain: string }[];
+  beforeDeploy?: string;
   afterDeploy?: string;
   environment?: Record<string, string>;
   certificate?: { type: 'clone'; certificate: number } | { type: 'existing'; certificate: string; key: string } | false;
@@ -110,8 +112,13 @@ export async function createPreview({
   core.info('Installing scheduler.');
   await site.installScheduler();
 
+  if (beforeDeploy) {
+    core.info('Updating deploy script (prepending beforeDeploy).');
+    await site.prependToDeployScript(beforeDeploy);
+  }
+
   if (afterDeploy) {
-    core.info('Updating deploy script.');
+    core.info('Updating deploy script (appending afterDeploy).');
     await site.appendToDeployScript(afterDeploy);
   }
 

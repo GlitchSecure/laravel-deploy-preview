@@ -39310,6 +39310,10 @@ class Site {
         await Promise.all((await Forge.listWorkers(this.server_id, this.id))
             .map(async (worker) => await Forge.deleteWorkers(this.server_id, this.id, worker.id)));
     }
+    async prependToDeployScript(prepend) {
+        const script = await Forge.getDeployScript(this.server_id, this.id);
+        await Forge.updateDeployScript(this.server_id, this.id, `${prepend}\n${script}`);
+    }
     async appendToDeployScript(append) {
         const script = await Forge.getDeployScript(this.server_id, this.id);
         // TODO does this take time to 'install'? If so what do we wait for?
@@ -39376,7 +39380,7 @@ class Site {
 
 
 
-async function createPreview({ branch, repository, servers, afterDeploy = '', environment = {}, certificate, name, webhooks, worker, failureEmails, aliases, isolated, username, php, }) {
+async function createPreview({ branch, repository, servers, beforeDeploy = '', afterDeploy = '', environment = {}, certificate, name, webhooks, worker, failureEmails, aliases, isolated, username, php, }) {
     core.info(`Creating preview site for branch: ${branch}.`);
     const siteName = `${name ?? normalizeDomainName(branch)}.${servers[0].domain}`;
     let site = tap((await Forge.listSites(servers[0].id)).find((site) => site.name === siteName), (site) => (site ? new Site(site) : undefined));
@@ -39437,8 +39441,12 @@ async function createPreview({ branch, repository, servers, afterDeploy = '', en
     });
     core.info('Installing scheduler.');
     await site.installScheduler();
+    if (beforeDeploy) {
+        core.info('Updating deploy script (prepending beforeDeploy).');
+        await site.prependToDeployScript(beforeDeploy);
+    }
     if (afterDeploy) {
-        core.info('Updating deploy script.');
+        core.info('Updating deploy script (appending afterDeploy).');
         await site.appendToDeployScript(afterDeploy);
     }
     core.info('Enabling Quick Deploy.');
@@ -39509,6 +39517,7 @@ async function run() {
         });
         const forgeToken = core.getInput('forge-token', { required: true });
         const githubToken = core.getInput('github-token', { required: true });
+        const beforeDeploy = core.getInput('before-deploy', { required: false });
         const afterDeploy = core.getInput('after-deploy', { required: false });
         const environment = core.getMultilineInput('environment', { required: false }).reduce((all, line) => {
             const [key, value] = line.split('=');
@@ -39581,6 +39590,7 @@ async function run() {
                 branch: pr.pull_request.head.ref,
                 repository: pr.repository.full_name,
                 servers,
+                beforeDeploy,
                 afterDeploy,
                 environment,
                 certificate,

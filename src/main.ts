@@ -25,6 +25,7 @@ export async function run() {
     const forgeToken = core.getInput('forge-token', { required: true });
     const githubToken = core.getInput('github-token', { required: true });
 
+    const beforeDeploy = core.getInput('before-deploy', { required: false });
     const afterDeploy = core.getInput('after-deploy', { required: false });
 
     const environment = core.getMultilineInput('environment', { required: false }).reduce((all, line) => {
@@ -126,6 +127,7 @@ export async function run() {
         branch: pr.pull_request.head.ref,
         repository: pr.repository.full_name,
         servers,
+        beforeDeploy,
         afterDeploy,
         environment,
         certificate,

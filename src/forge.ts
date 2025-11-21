@@ -450,6 +450,12 @@ export class Site {
     );
   }
 
+  async prependToDeployScript(prepend: string) {
+    const script = await Forge.getDeployScript(this.server_id, this.id);
+    await Forge.updateDeployScript(this.server_id, this.id, `${prepend}\n${script}`);
+  }
+
+
   async appendToDeployScript(append: string) {
     const script = await Forge.getDeployScript(this.server_id, this.id);
     // TODO does this take time to 'install'? If so what do we wait for?
