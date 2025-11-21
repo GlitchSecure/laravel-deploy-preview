@@ -248,6 +248,51 @@ Example:
     deployment-failure-email: failure@example.com
 ```
 
+#### `add-worker`
+The `add-worker` input paramter allows you to automatically create a queue worker background process for the new site deployment. This is necessary if you use an asynchronous queue for job processing like Redis. Defaults to `false`.
+
+Example:
+
+```yaml
+- uses: bakerkretzmar/laravel-deploy-preview@v2
+  with:
+    forge-token: ${{ secrets.FORGE_TOKEN }}
+    servers: |
+      qa-1.acme.dev 60041
+    add-worker: true
+```
+
+#### `worker-connection`
+The `worker-connection` input paramter allows you to specify the connection name for the queue worker to operate on. This parameter is required if `add-worker` is set to `true` 
+
+Example:
+
+```yaml
+- uses: bakerkretzmar/laravel-deploy-preview@v2
+  with:
+    forge-token: ${{ secrets.FORGE_TOKEN }}
+    servers: |
+      qa-1.acme.dev 60041
+    add-worker: true
+    worker-connection: 'redis'
+```
+
+#### `worker-queue`
+The `worker-queue` input paramter allows you to specify the queue name for the queue worker to operate on. If not specified, the queue worker will operate on the default queue.
+
+Example:
+
+```yaml
+- uses: bakerkretzmar/laravel-deploy-preview@v2
+  with:
+    forge-token: ${{ secrets.FORGE_TOKEN }}
+    servers: |
+      qa-1.acme.dev 60041
+    add-worker: true
+    worker-connection: 'redis'
+    worker-queue: 'hotfix'
+```
+
 ### Databases
 
 This action creates a new database for each preview site and deletes the database when the preview site is deleted. If your Forge server has one of the default supported database engines installed (MySQL, MariaDB, or PostgreSQL), that database engine will be used and no additional configuration is necessary.
