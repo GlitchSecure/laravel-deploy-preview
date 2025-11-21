@@ -39138,7 +39138,7 @@ class Forge {
             daemon: true,
             force: false,
             php_version: 'php',
-            queue: queue || "",
+            queue: queue || undefined,
         })).data.worker;
     }
     static async listWorkers(server, site) {
