@@ -39132,9 +39132,7 @@ class Forge {
     static async createWorker(server, site, connection, queue) {
         return (await this.post(`servers/${server}/sites/${site}/workers`, {
             connection,
-            timeout: 60,
             sleep: 3,
-            tries: 1,
             processes: 1,
             stopwaitsecs: 15,
             daemon: true,
