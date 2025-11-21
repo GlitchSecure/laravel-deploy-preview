@@ -117,7 +117,7 @@ Example:
 
 #### `before-deploy`
 
-The `before-deploy` input parameter allows you to prepend additional commands to be run before the default Forge deploy script.
+The `before-deploy` input parameter allows you to prepend additional commands to be run before the default Forge deploy script. Be careful! The CLI environment is not fully setup at this stage and you'll need to manually cd into the site path.
 
 Example:
 
@@ -127,7 +127,7 @@ Example:
     forge-token: ${{ secrets.FORGE_TOKEN }}
     servers: |
       qa-1.acme.dev 60041
-    before-deploy: git fetch origin $FORGE_SITE_BRANCH && git reset --hard origin/$FORGE_SITE_BRANCH
+    before-deploy: cd $FORGE_SITE_PATH && git fetch origin $FORGE_SITE_BRANCH && git reset --hard origin/$FORGE_SITE_BRANCH
 ```
 
 #### `environment`
