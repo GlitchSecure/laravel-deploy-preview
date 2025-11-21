@@ -102,7 +102,7 @@ Example:
 
 #### `after-deploy`
 
-The `after-deploy` input parameter allows you to append additional commands to be run after the Forge deploy script.
+The `after-deploy` input parameter allows you to append additional commands to be run after the default Forge deploy script.
 
 Example:
 
@@ -113,6 +113,21 @@ Example:
     servers: |
       qa-1.acme.dev 60041
     after-deploy: npm ci && npm run build
+```
+
+#### `before-deploy`
+
+The `before-deploy` input parameter allows you to prepend additional commands to be run before the default Forge deploy script.
+
+Example:
+
+```yaml
+- uses: bakerkretzmar/laravel-deploy-preview@v2
+  with:
+    forge-token: ${{ secrets.FORGE_TOKEN }}
+    servers: |
+      qa-1.acme.dev 60041
+    before-deploy: git fetch origin $FORGE_SITE_BRANCH && git reset --hard origin/$FORGE_SITE_BRANCH
 ```
 
 #### `environment`
