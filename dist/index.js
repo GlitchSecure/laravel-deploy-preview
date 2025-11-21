@@ -39129,6 +39129,26 @@ class Forge {
     static async deleteScheduledJob(server, job) {
         await this.delete(`servers/${server}/jobs/${job}`);
     }
+    static async createWorker(server, site, connection, queue) {
+        return (await this.post(`servers/${server}/sites/${site}/workers`, {
+            connection,
+            timeout: 60,
+            sleep: 3,
+            tries: 1,
+            processes: 1,
+            stopwaitsecs: 15,
+            daemon: true,
+            force: false,
+            php_version: 'php',
+            queue: queue || "",
+        })).data.worker;
+    }
+    static async listWorkers(server, site) {
+        return (await this.get(`servers/${server}/sites/${site}/workers`)).data.workers;
+    }
+    static async deleteWorkers(server, site, worker) {
+        await this.delete(`servers/${server}/sites/${site}/workers/${worker}`);
+    }
     static async deploy(server, site) {
         return (await this.post(`servers/${server}/sites/${site}/deployment/deploy`)).data.site;
     }
@@ -39285,6 +39305,13 @@ class Site {
             .filter((job) => new RegExp(`/home/forge/${this.name}/artisan`).test(job.command))
             .map(async (job) => await Forge.deleteScheduledJob(this.server_id, job.id)));
     }
+    async installWorker(connection, queue) {
+        await Forge.createWorker(this.server_id, this.id, connection, queue);
+    }
+    async uninstallWorkers() {
+        await Promise.all((await Forge.listWorkers(this.server_id, this.id))
+            .map(async (worker) => await Forge.deleteWorkers(this.server_id, this.id, worker.id)));
+    }
     async appendToDeployScript(append) {
         const script = await Forge.getDeployScript(this.server_id, this.id);
         // TODO does this take time to 'install'? If so what do we wait for?
@@ -39351,7 +39378,7 @@ class Site {
 
 
 
-async function createPreview({ branch, repository, servers, afterDeploy = '', environment = {}, certificate, name, webhooks, failureEmails, aliases, isolated, username, php, }) {
+async function createPreview({ branch, repository, servers, afterDeploy = '', environment = {}, certificate, name, webhooks, worker, failureEmails, aliases, isolated, username, php, }) {
     core.info(`Creating preview site for branch: ${branch}.`);
     const siteName = `${name ?? normalizeDomainName(branch)}.${servers[0].domain}`;
     let site = tap((await Forge.listSites(servers[0].id)).find((site) => site.name === siteName), (site) => (site ? new Site(site) : undefined));
@@ -39420,6 +39447,10 @@ async function createPreview({ branch, repository, servers, afterDeploy = '', en
     await site.enableQuickDeploy();
     core.info('Setting up webhooks.');
     await Promise.all(webhooks.map((url) => site.createWebhook(url)));
+    if (worker) {
+        core.info('Installing worker.');
+        await site.installWorker(worker.connection, worker.queue);
+    }
     if (failureEmails?.length) {
         core.info('Setting up deployment failure notifications.');
         if (failureEmails.length > 3) {
@@ -39495,6 +39526,9 @@ async function run() {
         const noCertificate = core.getBooleanInput('no-certificate', { required: false });
         const webhooks = core.getMultilineInput('deployment-webhooks', { required: false });
         const failureEmails = core.getMultilineInput('deployment-failure-emails', { required: false });
+        const addWorker = core.getBooleanInput('add-worker', { required: false });
+        const workerConnection = core.getInput('worker-connection', { required: false });
+        const workerQueue = core.getInput('worker-queue', { required: false });
         let certificate = undefined;
         if (noCertificate) {
             certificate = false;
@@ -39528,6 +39562,19 @@ async function run() {
                     }
                     : undefined;
         }
+        let worker = undefined;
+        if (addWorker) {
+            if (!workerConnection) {
+                throw new Error('add-worker is true but worker-connection is not specified.');
+            }
+            worker = {
+                connection: workerConnection,
+                queue: workerQueue,
+            };
+        }
+        else {
+            worker = false;
+        }
         const pr = github.context.payload;
         Forge.token(forgeToken);
         Forge.debug(core.isDebug() ? 2 : 0);
@@ -39540,6 +39587,7 @@ async function run() {
                 environment,
                 certificate,
                 webhooks,
+                worker,
                 failureEmails,
                 aliases,
                 isolated,
