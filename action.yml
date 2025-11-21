@@ -50,6 +50,16 @@ inputs:
   deployment-failure-emails:
     description: Email addresses to notify if the Forge deployment fails. Enter multiple emails on separate lines.
     required: false
+  add-worker:
+    description: Whether to install a queue worker for the preview site.
+    required: false
+    default: false
+  worker-connection:
+    description: The connection name for the queue worker (e.g. `redis`).
+    required: false
+  worker-queue:
+    description: The queue name for the queue worker (e.g. `hotfix`).
+    required: false
 outputs:
   site-url:
     description: The URL of the deployed preview site.

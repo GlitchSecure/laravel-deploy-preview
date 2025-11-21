@@ -181,6 +181,33 @@ export class Forge {
     await this.delete(`servers/${server}/jobs/${job}`);
   }
 
+  static async createWorker(
+    server: number, 
+    site: number, 
+    connection: string,
+    queue?: string | undefined,
+  ) {
+    return (await this.post<{ worker: unknown }>(`servers/${server}/sites/${site}/workers`, {
+      connection,
+      sleep: 3,
+      processes: 1,
+      stopwaitsecs: 15,
+      daemon: true,
+      force: false,
+      php_version: 'php', 
+      queue: queue || undefined,
+
+    })).data.worker;
+  }
+
+  static async listWorkers(server: number, site: number) {
+    return (await this.get<{ workers: unknown[] }>(`servers/${server}/sites/${site}/workers`)).data.workers;
+  }
+
+  static async deleteWorkers(server: number, site: number, worker: number) {
+    await this.delete(`servers/${server}/sites/${site}/workers/${worker}`);
+  }
+
   static async deploy(server: number, site: number) {
     return (await this.post<{ site: SitePayload }>(`servers/${server}/sites/${site}/deployment/deploy`)).data.site;
   }
@@ -409,6 +436,17 @@ export class Site {
       (await Forge.listScheduledJobs(this.server_id))
         .filter((job) => new RegExp(`/home/forge/${this.name}/artisan`).test(job.command))
         .map(async (job) => await Forge.deleteScheduledJob(this.server_id, job.id)),
+    );
+  }
+
+  async installWorker(connection: string, queue: string | undefined) {
+    await Forge.createWorker(this.server_id, this.id, connection, queue);
+  }
+
+  async uninstallWorkers() {
+    await Promise.all(
+      (await Forge.listWorkers(this.server_id, this.id))
+        .map(async (worker: any) => await Forge.deleteWorkers(this.server_id, this.id, worker.id)),
     );
   }
 
