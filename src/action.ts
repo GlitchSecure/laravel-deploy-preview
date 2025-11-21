@@ -11,6 +11,7 @@ export async function createPreview({
   certificate,
   name,
   webhooks,
+  worker,
   failureEmails,
   aliases,
   isolated,
@@ -25,6 +26,7 @@ export async function createPreview({
   certificate?: { type: 'clone'; certificate: number } | { type: 'existing'; certificate: string; key: string } | false;
   name?: string;
   webhooks: string[];
+  worker: | { connection: string; queue: string } | false | undefined;
   failureEmails?: string[];
   aliases: string[];
   isolated: boolean;
@@ -118,6 +120,11 @@ export async function createPreview({
 
   core.info('Setting up webhooks.');
   await Promise.all(webhooks.map((url) => site.createWebhook(url)));
+  
+  if (worker) {
+    core.info('Installing worker.');
+    await site.installWorker(worker.connection, worker.queue);
+  }
 
   if (failureEmails?.length) {
     core.info('Setting up deployment failure notifications.');

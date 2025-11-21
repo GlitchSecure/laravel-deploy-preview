@@ -45,6 +45,10 @@ export async function run() {
     const webhooks = core.getMultilineInput('deployment-webhooks', { required: false });
     const failureEmails = core.getMultilineInput('deployment-failure-emails', { required: false });
 
+    const addWorker = core.getBooleanInput('add-worker', { required: false });
+    const workerConnection = core.getInput('worker-connection', { required: false });
+    const workerQueue = core.getInput('worker-queue', { required: false });
+
     let certificate:
       | { type: 'clone'; certificate: number }
       | { type: 'existing'; certificate: string; key: string }
@@ -94,6 +98,24 @@ export async function run() {
           : undefined;
     }
 
+    let worker:
+      | { connection: string; queue: string }
+      | undefined
+      | false = undefined;
+      
+    if (addWorker) {
+      if (!workerConnection) {
+        throw new Error('add-worker is true but worker-connection is not specified.');
+      }
+
+      worker = {
+        connection: workerConnection,
+        queue: workerQueue,
+      };
+    } else {
+      worker = false;
+    }
+
     const pr = github.context.payload as PullRequestEvent;
 
     Forge.token(forgeToken);
@@ -108,6 +130,7 @@ export async function run() {
         environment,
         certificate,
         webhooks,
+        worker,
         failureEmails,
         aliases,
         isolated,
