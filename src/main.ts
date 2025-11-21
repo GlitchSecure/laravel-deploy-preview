@@ -160,7 +160,7 @@ export async function run() {
       });
 
       if (preview) {
-        core.setOutput('site-id', preview.id);  
+        core.setOutput('site-id', preview.id);
       }
     }
   } catch (error) {
